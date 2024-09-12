@@ -158,7 +158,7 @@ export default function Signup() {
         />
       )}
       {/* Left Side */}
-      <div className="w-full lg:w-[55%] text-white p-4 lg:p-6 flex flex-col items-center justify-center bg-gradient-to-r from-blue-600 via-blue-500 to-transparent">
+      <div className="w-full lg:w-[40%] text-white p-4 lg:p-6 flex flex-col items-center justify-center">
         <div className="flex items-center justify-center mr-14">
           <img
             src={Ruthi_full_Logo}
@@ -172,7 +172,7 @@ export default function Signup() {
       </div>
 
       {/* Right Side */}
-      <div className="w-full lg:w-[45%] flex items-center justify-center p-4 lg:p-8 relative">
+      <div className="w-full lg:w-[60%] flex items-center justify-center p-4 lg:p-8 relative bg-gradient-to-l  from-blue-600 via-blue-500 to-transparent">
         {/* Form Container */}
         <div className="relative p-4 lg:p-6 rounded-xl w-full max-w-md z-10 lg:mr-8 overflow-auto shadow-2xl bg-white opacity-85">
           <h1 className="text-2xl lg:text-3xl font-bold text-blue-700 mb-4">

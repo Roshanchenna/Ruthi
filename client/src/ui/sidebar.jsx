@@ -56,7 +56,8 @@ export const DesktopSidebar = ({ className, children, ...props }) => {
   return (
     <motion.div
       className={cn(
-        "h-screen px-4 py-4 hidden md:flex md:flex-col bg-neutral-100 dark:bg-neutral-800 w-[300px] flex-shrink-0",
+        "h-screen py-4 hidden md:flex md:flex-col bg-neutral-100 dark:bg-neutral-800 w-[300px] flex-shrink-0",
+        open ? "px-4" : "px-2", // Adjust horizontal padding based on sidebar state
         className
       )}
       animate={{
@@ -103,7 +104,7 @@ export const MobileSidebar = ({ className, children, ...props }) => {
           >
             <div
               className="absolute right-10 top-10 z-50 text-neutral-800 dark:text-neutral-200"
-              onClick={() => setOpen(!open)}
+              onClick={() => setOpen(false)}
             >
               <IconX />
             </div>
@@ -115,25 +116,48 @@ export const MobileSidebar = ({ className, children, ...props }) => {
   );
 };
 
-export const SidebarLink = ({ link, className, onClick, ...props }) => {
-  const { open, animate } = useSidebar();
+export const SidebarLink = ({ link, className, onClick, isActive, ...props }) => {
+  const { open, setOpen, animate } = useSidebar();
+
+  const handleClick = (e) => {
+    if (onClick) {
+      onClick(e);
+    }
+    // Close the sidebar on mobile when a link is clicked
+    if (window.innerWidth < 768) {
+      setOpen(false);
+    }
+  };
+
   return (
     <Link
       to={link.href}
       className={cn(
-        "flex items-center justify-start gap-2 group/sidebar py-2",
+        "flex items-center justify-start gap-2 group/sidebar py-2 rounded-md transition-colors duration-150",
+        isActive
+          ? "bg-neutral-200 dark:bg-neutral-700 text-orange-600 dark:text-neutral-100"
+          : "text-neutral-700 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700",
+        open ? "px-2" : "px-[14px]", // Adjust padding based on sidebar state
         className
       )}
-      onClick={onClick}
+      onClick={handleClick}
       {...props}
     >
-      {link.icon}
+      {React.cloneElement(link.icon, {
+        className: cn(
+          "flex-shrink-0 w-5 h-5", // Add fixed width and height
+          isActive ? "text-orange-600 dark:text-neutral-100" : "text-neutral-500 dark:text-neutral-400"
+        ),
+      })}
       <motion.span
         animate={{
           display: animate ? (open ? "inline-block" : "none") : "inline-block",
           opacity: animate ? (open ? 1 : 0) : 1,
         }}
-        className="text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0"
+        className={cn(
+          "text-sm whitespace-pre inline-block !p-0 !m-0",
+          isActive ? "font-medium" : "font-normal"
+        )}
       >
         {link.label}
       </motion.span>

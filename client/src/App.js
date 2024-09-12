@@ -20,7 +20,7 @@ import VerifyEmailPrompt from "./views/VerifyEmail";
 import ForgotPassword from "./components/auth/ForgotPassword";
 import ResetPassword from "./components/auth/ResetPassword";
 import SidebarDemo from "./views/SidebarDemo";
-// import ColorPaletteProvider from './components/ColorPaletteProvider';
+import UploadResume from "./views/UploadResume";
 
 function App() {
   return (
@@ -44,6 +44,7 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/profile" element={<SidebarDemo />} />
+            <Route path="/uploadResume" element={<UploadResume />} />
           </Routes>
         </BrowserRouter>
       </NextUIProvider>

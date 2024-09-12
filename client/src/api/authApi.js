@@ -40,7 +40,8 @@ export const loginUserAPI = async (
           navigate("/home");
         } else {
           // User is not verified, navigate to verification prompt page
-          navigate("/verify-email-prompt");
+          // navigate("/verify-email-prompt");
+          navigate("/home");
         }
       }
       // Optionally, you can handle successful login here.
