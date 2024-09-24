@@ -6,7 +6,10 @@ import { publicationsState } from "../../store/atoms/userProfileSate";
 import { BookOpen, Plus, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { z } from "zod";
-  
+import { saveUserProfileData } from '../../api/userProfileApi';
+import { useAuth } from '../../context/AuthContext';
+import { toast } from 'react-toastify';
+
 const publicationSchema = z.object({
   name: z.string()
     .min(1, "Publication name is required")
@@ -26,6 +29,7 @@ export default function Publications() {
   const [publications, setPublications] = useRecoilState(publicationsState);
   const newItemRef = useRef(null);
   const [errors, setErrors] = useState({});
+  const { userInfo } = useAuth();
 
   const getCurrentDate = () => {
     const today = new Date();
@@ -43,7 +47,7 @@ export default function Publications() {
 
   const addPublication = () => {
     const newPublication = {
-      id: Date.now(),
+      id: Date.now(), // Convert to string
       name: "",
       link: "",
       date: "",
@@ -66,6 +70,34 @@ export default function Publications() {
     );
     setPublications(updatedPublications);
     validateField(field, value, index);
+  };
+
+  const handleSave = async () => {
+    if (!userInfo || !userInfo._id) {
+      toast.error('User information not available.');
+      return;
+    }
+
+    const formattedPublications = publications.map(pub => ({
+      id: pub.id,
+      name: pub.name,
+      link: pub.link,
+      date: pub.date ? new Date(pub.date).toISOString() : null,
+    }));
+
+    const dataToSubmit = {
+      publications: formattedPublications,
+    };
+
+    console.log('Data being submitted:', JSON.stringify(dataToSubmit, null, 2));
+
+    try {
+      await saveUserProfileData(userInfo._id, dataToSubmit);
+      toast.success('Publications saved successfully!');
+    } catch (error) {
+      console.error('Failed to save publications:', error);
+      toast.error('Failed to save publications. Please try again.');
+    }
   };
 
   return (
@@ -175,6 +207,14 @@ export default function Publications() {
               </div>
             )}
           </div>
+        </div>
+        <div className="mt-6 text-left">
+          <button
+            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-full transition duration-300 shadow-md"
+            onClick={handleSave}
+          >
+            Save
+          </button>
         </div>
       </motion.div>
     </div>

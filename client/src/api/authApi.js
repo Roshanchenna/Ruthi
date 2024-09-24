@@ -32,41 +32,41 @@ export const loginUserAPI = async (
 
       if (userResponse.status === 200) {
         const userData = userResponse.data;
-        // setUserInfo(userData);
         console.log("userData:", userData);
         console.log("isVerified:", userData.isVerified);
-        if (userData.isVerified) {
-          // User is verified, navigate to home page
+        
+        try {
+          const profileResponse = await axios.get(`${BACKEND_URL}/api/user-profile/${userData._id}`);
+          console.log("profileResponse:", profileResponse);
+          // If we reach here, it means the profile exists
           navigate("/home");
-        } else {
-          // User is not verified, navigate to verification prompt page
-          // navigate("/verify-email-prompt");
-          navigate("/home");
+        } catch (profileError) {
+          if (profileError.response && profileError.response.status === 404) {
+            // Profile doesn't exist, navigate to upload resume
+            navigate("/uploadResume");
+          } else {
+            // Handle other errors
+            console.error("Error checking user profile:", profileError);
+            showNotification("Error checking user profile. Please try again.", "error");
+          }
         }
       }
-      // Optionally, you can handle successful login here.
       showNotification("Login successful", "success");
-      // onSuccess();
     }
   } catch (error) {
-    console.log("Login failed");
-    if (error.response){
+    console.log("Login failed", error);
+    if (error.response) {
       if (error.response.status === 404) {
         showNotification("User not found. Please check your username.", "error");
       } else if (error.response.status === 401) {
-        showNotification(
-          "Invalid password. Please check your password.",
-          "error"
-        );
+        showNotification("Invalid password. Please check your password.", "error");
       } else {
-        showNotification(
-          "Network or server error. Please try again later.",
-          "error"
-        );
+        showNotification("Network or server error. Please try again later.", "error");
       }
+    } else {
+      showNotification("An unexpected error occurred. Please try again.", "error");
     }
   }
-  return;
 };
 
 export const registerUserAPI = async (

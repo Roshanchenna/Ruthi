@@ -21,6 +21,8 @@ import ForgotPassword from "./components/auth/ForgotPassword";
 import ResetPassword from "./components/auth/ResetPassword";
 import SidebarDemo from "./views/SidebarDemo";
 import UploadResume from "./views/UploadResume";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   return (
@@ -48,6 +50,7 @@ function App() {
           </Routes>
         </BrowserRouter>
       </NextUIProvider>
+      <ToastContainer />
       {/* <div className="min-h-full h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8"> */}
 

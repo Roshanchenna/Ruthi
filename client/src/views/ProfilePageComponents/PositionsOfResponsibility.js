@@ -14,12 +14,17 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
+import { saveUserProfileData } from "../../api/userProfileApi";
+import { useAuth } from "../../context/AuthContext";
+import { toast } from "react-toastify";
 
 const positionSchema = z.object({
-  title: z.string()
+  title: z
+    .string()
     .min(1, "Title is required")
     .regex(/^(?=.*[a-zA-Z])/, "Title must contain at least one letter"),
-  organization: z.string()
+  organization: z
+    .string()
     .min(1, "Organization is required")
     .regex(/^(?=.*[a-zA-Z])/, "Organization must contain at least one letter"),
   start_date: z.string().min(1, "Start date is required"),
@@ -34,6 +39,7 @@ export default function PositionsOfResponsibility() {
   const [expandedId, setExpandedId] = useState(null);
   const newItemRef = useRef(null);
   const [errors, setErrors] = useState({});
+  const { userInfo } = useAuth();
 
   const getCurrentDate = () => {
     const today = new Date();
@@ -43,9 +49,12 @@ export default function PositionsOfResponsibility() {
   const validateField = (field, value, index) => {
     try {
       positionSchema.shape[field].parse(value);
-      setErrors(prev => ({...prev, [`${index}-${field}`]: null}));
+      setErrors((prev) => ({ ...prev, [`${index}-${field}`]: null }));
     } catch (error) {
-      setErrors(prev => ({...prev, [`${index}-${field}`]: error.errors[0].message}));
+      setErrors((prev) => ({
+        ...prev,
+        [`${index}-${field}`]: error.errors[0].message,
+      }));
     }
   };
 
@@ -82,10 +91,16 @@ export default function PositionsOfResponsibility() {
     validateField(field, value, index);
 
     // Additional validation for end date
-    if (field === 'end_date') {
+    if (field === "end_date") {
       const currentPosition = updatedPositions[index];
-      if (currentPosition.start_date && new Date(value) < new Date(currentPosition.start_date)) {
-        setErrors(prev => ({...prev, [`${index}-${field}`]: "End date must be after start date"}));
+      if (
+        currentPosition.start_date &&
+        new Date(value) < new Date(currentPosition.start_date)
+      ) {
+        setErrors((prev) => ({
+          ...prev,
+          [`${index}-${field}`]: "End date must be after start date",
+        }));
       }
     }
   };
@@ -93,6 +108,28 @@ export default function PositionsOfResponsibility() {
   const descriptionToBulletPoints = (description) => {
     if (typeof description !== "string") return [];
     return description.split("\n").filter((point) => point.trim() !== "");
+  };
+
+  const handleSave = async () => {
+    if (!userInfo || !userInfo._id) {
+      toast.error("User information not available.");
+      return;
+    }
+
+    const dataToSubmit = {
+      position_of_responsibility: positions,
+    };
+    console.log("positions", positions);
+
+    try {
+      await saveUserProfileData(userInfo._id, dataToSubmit);
+      toast.success("Positions of responsibility saved successfully!");
+    } catch (error) {
+      console.error("Failed to save positions of responsibility:", error);
+      toast.error(
+        "Failed to save positions of responsibility. Please try again."
+      );
+    }
   };
 
   return (
@@ -172,13 +209,23 @@ export default function PositionsOfResponsibility() {
                               type="text"
                               id={`position-title-${position.id}`}
                               value={position.title}
-                              onChange={(e) => handleInputChange(index, "title", e.target.value)}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  index,
+                                  "title",
+                                  e.target.value
+                                )
+                              }
                               className={`w-full px-3 py-2 text-sm border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                errors[`${index}-title`] ? "border-red-500" : "border-gray-300"
+                                errors[`${index}-title`]
+                                  ? "border-red-500"
+                                  : "border-gray-300"
                               }`}
                             />
                             {errors[`${index}-title`] && (
-                              <p className="text-red-500 text-xs mt-1">{errors[`${index}-title`]}</p>
+                              <p className="text-red-500 text-xs mt-1">
+                                {errors[`${index}-title`]}
+                              </p>
                             )}
                           </div>
                           <div>
@@ -192,13 +239,23 @@ export default function PositionsOfResponsibility() {
                               type="text"
                               id={`position-organization-${position.id}`}
                               value={position.organization}
-                              onChange={(e) => handleInputChange(index, "organization", e.target.value)}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  index,
+                                  "organization",
+                                  e.target.value
+                                )
+                              }
                               className={`w-full px-3 py-2 text-sm border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                errors[`${index}-organization`] ? "border-red-500" : "border-gray-300"
+                                errors[`${index}-organization`]
+                                  ? "border-red-500"
+                                  : "border-gray-300"
                               }`}
                             />
                             {errors[`${index}-organization`] && (
-                              <p className="text-red-500 text-xs mt-1">{errors[`${index}-organization`]}</p>
+                              <p className="text-red-500 text-xs mt-1">
+                                {errors[`${index}-organization`]}
+                              </p>
                             )}
                           </div>
                           <div>
@@ -213,13 +270,23 @@ export default function PositionsOfResponsibility() {
                               id={`position-start-date-${position.id}`}
                               value={position.start_date}
                               max={getCurrentDate()}
-                              onChange={(e) => handleInputChange(index, "start_date", e.target.value)}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  index,
+                                  "start_date",
+                                  e.target.value
+                                )
+                              }
                               className={`w-full px-3 py-2 text-sm border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                errors[`${index}-start_date`] ? "border-red-500" : "border-gray-300"
+                                errors[`${index}-start_date`]
+                                  ? "border-red-500"
+                                  : "border-gray-300"
                               }`}
                             />
                             {errors[`${index}-start_date`] && (
-                              <p className="text-red-500 text-xs mt-1">{errors[`${index}-start_date`]}</p>
+                              <p className="text-red-500 text-xs mt-1">
+                                {errors[`${index}-start_date`]}
+                              </p>
                             )}
                           </div>
                           <div>
@@ -235,13 +302,23 @@ export default function PositionsOfResponsibility() {
                               value={position.end_date}
                               min={position.start_date}
                               max={getCurrentDate()}
-                              onChange={(e) => handleInputChange(index, "end_date", e.target.value)}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  index,
+                                  "end_date",
+                                  e.target.value
+                                )
+                              }
                               className={`w-full px-3 py-2 text-sm border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                errors[`${index}-end_date`] ? "border-red-500" : "border-gray-300"
+                                errors[`${index}-end_date`]
+                                  ? "border-red-500"
+                                  : "border-gray-300"
                               }`}
                             />
                             {errors[`${index}-end_date`] && (
-                              <p className="text-red-500 text-xs mt-1">{errors[`${index}-end_date`]}</p>
+                              <p className="text-red-500 text-xs mt-1">
+                                {errors[`${index}-end_date`]}
+                              </p>
                             )}
                           </div>
                           <div className="md:col-span-2">
@@ -254,7 +331,13 @@ export default function PositionsOfResponsibility() {
                             <textarea
                               id={`position-description-${position.id}`}
                               value={position.description}
-                              onChange={(e) => handleInputChange(index, "description", e.target.value)}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  index,
+                                  "description",
+                                  e.target.value
+                                )
+                              }
                               rows={3}
                               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                               placeholder="Enter responsibilities, one per line"
@@ -291,6 +374,16 @@ export default function PositionsOfResponsibility() {
                 No positions added. Click the plus button to add a position.
               </div>
             )}
+          </div>
+
+          {/* Add the save button */}
+          <div className="mt-6 text-left">
+            <button
+              onClick={handleSave}
+              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-full transition duration-300 shadow-md"
+            >
+              Save
+            </button>
           </div>
         </div>
       </motion.div>

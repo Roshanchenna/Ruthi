@@ -19,6 +19,7 @@ const jobRoutes = require("./routes/job");
 const questionRoutes = require("./routes/question");
 const azureRoutes = require("./routes/azure");
 const openAIRoutes = require("./routes/openAI");
+const userProfileRoutes = require("./routes/userProfiles");
 
 // Use your authentication routes
 app.use("/api/auth", authRoutes);
@@ -37,6 +38,8 @@ app.use("/api", jobRoutes);
 
 // Use question routes
 app.use("/api", questionRoutes);
+
+app.use("/api/user-profile", userProfileRoutes);
 
 // Define and use other routes here
 

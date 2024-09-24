@@ -8,6 +8,10 @@ import { IconUserCheck } from "@tabler/icons-react";
 import { motion } from "framer-motion";
 import { z } from "zod";
 import { useState } from "react";
+import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
+import { toast } from "react-toastify";
+import { saveUserProfileData } from "../../api/userProfileApi";
 
 // Define the schema
 const personalInfoSchema = z.object({
@@ -25,7 +29,11 @@ const personalInfoSchema = z.object({
     .number()
     .min(1, "Expected salary must be at least 1")
     .max(99, "Expected salary must not exceed 99")
-    .or(z.string().regex(/^[1-9][0-9]?$/, "Expected salary must be between 1 and 99")),
+    .or(
+      z
+        .string()
+        .regex(/^[1-9][0-9]?$/, "Expected salary must be between 1 and 99")
+    ),
 });
 
 const socialsSchema = z.object({
@@ -42,16 +50,39 @@ const BasicInformationForm = ({ errors: parentErrors }) => {
   const profileInformation = useRecoilValue(userProfileState);
   const [socials, setSocials] = useRecoilState(socialsState);
   const [errors, setErrors] = useState({});
+  const { userInfo } = useAuth();
+
+  const handleSave = async () => {
+    if (!userInfo || !userInfo._id) {
+      toast.error('User information not available.');
+      return;
+    }
+
+    const dataToSubmit = {
+      userId: userInfo._id,
+        personal_information: {
+          ...personalInformation,
+          email: userInfo.email, // Use the email from userInfo
+        },
+        socials,
+    };
+
+    try {
+      await saveUserProfileData(userInfo._id, dataToSubmit);
+    } catch (error) {
+      console.error('Failed to save data:', error);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     let updatedValue = value;
-    
+
     // Special handling for expected_salary
-    if (name === 'expected_salary') {
-      updatedValue = value.replace(/^0+/, '').slice(0, 2); // Remove leading zeros and limit to 2 digits
+    if (name === "expected_salary") {
+      updatedValue = value.replace(/^0+/, "").slice(0, 2); // Remove leading zeros and limit to 2 digits
     }
-    
+
     setPersonalInformation({ ...personalInformation, [name]: updatedValue });
     validateField(name, updatedValue);
   };
@@ -343,6 +374,16 @@ const BasicInformationForm = ({ errors: parentErrors }) => {
               </div>
             </div>
           </div>
+        </div>
+        
+        {/* Add the Save button here, aligned to the right */}
+        <div className="mt-6 text-left">
+          <button
+            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-full transition duration-300 shadow-md"
+            onClick={handleSave}
+          >
+            Save
+          </button>
         </div>
       </motion.div>
     </div>

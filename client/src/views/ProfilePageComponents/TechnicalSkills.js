@@ -6,6 +6,9 @@ import { useRecoilState } from "recoil"
 import { skillsState } from "../../store/atoms/userProfileSate"
 import { IconDeviceDesktop } from "@tabler/icons-react"
 import { motion } from "framer-motion"
+import { saveUserProfileData } from '../../api/userProfileApi'
+import { useAuth } from '../../context/AuthContext'
+import { toast } from 'react-toastify'
 
 const initialSkills = [
   "JavaScript", "Python", "Java", "C++", "Ruby", "Go", "Rust",
@@ -18,6 +21,7 @@ const proficiencyLevels = ["Beginner", "Intermediate", "Advanced", "Expert"]
 
 export default function SkillsDropdown() {
   const [skills, setSkills] = useRecoilState(skillsState)
+  const { userInfo } = useAuth()
   const [availableSkills, setAvailableSkills] = useState(initialSkills)
   const [selectedSkill, setSelectedSkill] = useState("")
   const [customSkill, setCustomSkill] = useState("")
@@ -104,6 +108,24 @@ export default function SkillsDropdown() {
       }, 0)
     } else {
       setIsProficiencyDropdownOpen(true)
+    }
+  }
+
+  const handleSave = async () => {
+    if (!userInfo || !userInfo._id) {
+      toast.error('User information not available.')
+      return
+    }
+
+    const dataToSubmit = {
+      skills: skills,
+    }
+
+    try {
+      await saveUserProfileData(userInfo._id, dataToSubmit)
+      toast.success('Skills saved successfully!')
+    } catch (error) {
+      console.error('Failed to save skills:', error)
     }
   }
 
@@ -235,6 +257,16 @@ export default function SkillsDropdown() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Add the Save button */}
+      <div className="mt-6 text-left">
+        <button
+          className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-full transition duration-300 shadow-md"
+          onClick={handleSave}
+        >
+          Save
+        </button>
       </div>
       </motion.div>
     </div>

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API_URL = BACKEND_URL + "/api/auth";
@@ -6,34 +6,59 @@ const API_URL = BACKEND_URL + "/api/auth";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [authToken, setAuthToken] = useState(null);
+  const [authToken, setAuthToken] = useState(localStorage.getItem("authToken"));
   const [userInfo, setUserInfo] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const setToken = async (token) => {
+  const setToken = useCallback((token) => {
     setAuthToken(token);
-    localStorage.setItem("authToken", token);
-  };
+    if (token) {
+      localStorage.setItem("authToken", token);
+    } else {
+      localStorage.removeItem("authToken");
+    }
+  }, []);
 
-  const fetchUserInfo = async (token) => {
+  const fetchUserInfo = useCallback(async () => {
+    if (!authToken) {
+      setIsLoading(false);
+      return null;
+    }
+
     try {
       const response = await fetch(`${API_URL}/user/info`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${authToken}`,
         },
       });
       if (response.ok) {
         const userData = await response.json();
-        console.log("got userData", userData);
         setUserInfo(userData);
+        return userData;
+      } else {
+        throw new Error('Failed to fetch user info');
       }
     } catch (error) {
       console.error("Error fetching user information:", error);
+      setToken(null);
+      return null;
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [authToken, setToken]);
+
+  useEffect(() => {
+    fetchUserInfo();
+  }, [fetchUserInfo]);
+
+  const logout = useCallback(() => {
+    setToken(null);
+    setUserInfo(null);
+  }, [setToken]);
 
   return (
     <AuthContext.Provider
-      value={{ authToken, setToken, userInfo, fetchUserInfo }}
+      value={{ authToken, setToken, userInfo, fetchUserInfo, logout, isLoading }}
     >
       {children}
     </AuthContext.Provider>

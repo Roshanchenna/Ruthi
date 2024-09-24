@@ -1,3 +1,4 @@
+import { Title } from "@tremor/react";
 import { atom } from "recoil";
 
 // Atom for personal information
@@ -27,6 +28,7 @@ export const coursesState = atom({
   key: "coursesState",
   default: [
     {
+      id: 0,
       course_name: "",
       course_link: "",
       course_provider: "",
@@ -40,12 +42,13 @@ export const educationState = atom({
   key: "educationState",
   default: [
     {
+      id: 0,
       institution: "",
       degree: "",
       start_date: "",
       end_date: "",
       cgpa_or_percentage: "",
-      description:[],
+      description: [],
     },
   ],
 });
@@ -53,7 +56,17 @@ export const educationState = atom({
 // Atom for experience
 export const experienceState = atom({
   key: "experienceState",
-  default: [],
+  default: [
+    {
+      id: 0,
+      company: "",
+      position: "",
+      start_date: "",
+      end_date: "",
+      description: [],
+      currently_working: false,
+    },
+  ],
 });
 
 // Atom for publications
@@ -61,6 +74,7 @@ export const publicationsState = atom({
   key: "publicationsState",
   default: [
     {
+      id: 0,
       name: "",
       link: "",
       date: "",
@@ -84,12 +98,13 @@ export const personalProjectsState = atom({
   key: "personalProjectsState",
   default: [
     {
+      id: 0,
       name: "",
       description: [],
       link: "",
       start_date: "",
       end_date: "",
-      description:[]
+      description: [],
     },
   ],
 });
@@ -103,13 +118,29 @@ export const awardsAndAchievementsState = atom({
 // Atom for positions of responsibility
 export const positionsOfResponsibilityState = atom({
   key: "positionsOfResponsibilityState",
-  default: [],
+  default: [
+    {
+      id: 0,
+      title: "",
+      organization: "",
+      start_date: "",
+      end_date: "",
+      description: [],
+    },
+  ],
 });
 
 // Atom for competitions
 export const competitionsState = atom({
   key: "competitionsState",
-  default: [],
+  default: [
+    {
+      id: 0,
+      name: "",
+      description: [],
+      date: "",
+    },
+  ],
 });
 
 // Atom for extracurricular activities

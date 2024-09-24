@@ -38,6 +38,8 @@ import OverviewPage from "./ProfilePageComponents/OverviewPage";
 import { useRecoilValue } from "recoil";
 import { personalInformationState, educationState } from "../store/atoms/userProfileSate";
 import { Toaster, toast } from 'react-hot-toast';
+import {useAuth} from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const sectionIcons = {
   Publications: IconNotebook,
@@ -114,8 +116,17 @@ export default function SidebarDemo() {
     }
   };
 
+  const {authToken, fetchUserInfo} = useAuth();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!authToken) {
+      navigate('/login');
+    }
+  }, [authToken, navigate]);
+
   // Update the links state when additionalSections change
   useEffect(() => {
+
     const updatedLinks = [
       ...initialLinks.slice(0, -2),
       ...additionalSections.map(section => ({

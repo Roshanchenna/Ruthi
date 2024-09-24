@@ -5,6 +5,9 @@ import { experienceState } from "../../store/atoms/userProfileSate";
 import { IconBriefcase } from "@tabler/icons-react";
 import { motion } from "framer-motion";
 import { z } from "zod";
+import { useAuth } from '../../context/AuthContext';
+import { toast } from 'react-toastify';
+import { saveUserProfileData } from '../../api/userProfileApi';
 
 const experienceSchema = z.object({
   company: z.string()
@@ -23,6 +26,7 @@ export default function ExperienceForm() {
   const [experiences, setExperiences] = useRecoilState(experienceState);
   const newCardRef = useRef(null);
   const [errors, setErrors] = React.useState({});
+  const { userInfo } = useAuth();
 
   const validateField = (field, value, experienceId) => {
     try {
@@ -85,6 +89,24 @@ export default function ExperienceForm() {
       return [];
     }
     return description.split("\n").filter((point) => point.trim() !== "");
+  };
+
+  const handleSave = async () => {
+    if (!userInfo || !userInfo._id) {
+      toast.error('User information not available.');
+      return;
+    }
+
+    const dataToSubmit = {
+      experience: experiences,
+    };
+
+    try {
+      await saveUserProfileData(userInfo._id, dataToSubmit);
+      toast.success('Data saved successfully!');
+    } catch (error) {
+      console.error('Failed to save data:', error);
+    }
   };
 
   return (
@@ -312,6 +334,15 @@ export default function ExperienceForm() {
               </div>
             ))}
           </div>
+        </div>
+        {/* Add the Save button */}
+        <div className="mt-6 text-left">
+          <button
+            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-full transition duration-300 shadow-md"
+            onClick={handleSave}
+          >
+            Save
+          </button>
         </div>
       </motion.div>
     </div>

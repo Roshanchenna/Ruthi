@@ -10,6 +10,9 @@ import { GraduationCap, BookOpen, Plus, Trash2 } from "lucide-react";
 import { IconBook } from "@tabler/icons-react";
 import { motion } from "framer-motion";
 import { z } from "zod";
+import { saveUserProfileData } from '../../api/userProfileApi';
+import { useAuth } from '../../context/AuthContext';
+import { toast } from 'react-toastify';
 
 const educationSchema = z.object({
   institution: z.string()
@@ -58,12 +61,19 @@ const courseSchema = z.object({
   course_link: z.string().url("Invalid URL").or(z.literal("")),
 });
 
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toISOString().split('T')[0];
+};
+
 export default function Education() {
   const [educations, setEducations] = useRecoilState(educationState);
   const [courses, setCourses] = useRecoilState(coursesState);
   const [activeTab, setActiveTab] = useState("education");
   const newItemRef = useRef(null);
   const [errors, setErrors] = useState({});
+  const { userInfo } = useAuth();
 
   const validateField = (schema, field, value) => {
     try {
@@ -111,7 +121,7 @@ export default function Education() {
 
   const addEducation = () => {
     const newEducation = {
-      id: Date.now(),
+      id: Date.now().toString(),
       institution: "",
       degree: "",
       start_date: "",
@@ -125,7 +135,7 @@ export default function Education() {
 
   const addCourse = () => {
     const newCourse = {
-      id: Date.now(),
+      id: Date.now().toString(),
       course_name: "",
       course_provider: "",
       completion_date: "",
@@ -165,6 +175,56 @@ export default function Education() {
     const today = new Date();
     const seventyYearsAgo = new Date(today.getFullYear() - 70, today.getMonth(), today.getDate());
     return seventyYearsAgo.toISOString().split('T')[0];
+  };
+
+  const handleSave = async () => {
+    if (!userInfo || !userInfo._id) {
+      toast.error('User information not available.');
+      return;
+    }
+
+    const formattedEducations = educations.map(edu => {
+      if (!edu || typeof edu.id === 'undefined' || !edu.id) {
+        return null;
+      }
+      return {
+        id: edu.id.toString(),
+        institution: edu.institution,
+        degree: edu.degree,
+        start_date: edu.start_date ? new Date(edu.start_date).toISOString() : null,
+        end_date: edu.end_date ? new Date(edu.end_date).toISOString() : null,
+        cgpa_or_percentage: edu.cgpa_or_percentage,
+        description: edu.description,
+      };
+    }).filter(edu => edu !== null);
+
+    const formattedCourses = courses.map(course => {
+      if (!course || typeof course.id === 'undefined' || !course.id) {
+        return null;
+      }
+      return {
+        id: course.id.toString(),
+        course_name: course.course_name,
+        course_provider: course.course_provider,
+        completion_date: course.completion_date ? new Date(course.completion_date).toISOString() : null,
+        course_link: course.course_link,
+      };
+    }).filter(course => course !== null);
+
+    const dataToSubmit = {
+      education: formattedEducations,
+      courses: formattedCourses
+    };
+
+    console.log('Data being submitted:', JSON.stringify(dataToSubmit, null, 2));
+
+    try {
+      await saveUserProfileData(userInfo._id, dataToSubmit);
+      toast.success('Education and courses saved successfully!');
+    } catch (error) {
+      console.error('Failed to save data:', error);
+      toast.error('Failed to save education and courses. Please try again.');
+    }
   };
 
   return (
@@ -215,7 +275,7 @@ export default function Education() {
             <div className="space-y-4">
               {educations.map((education, index) => (
                 <div
-                  key={education.id}
+                  key={education.id || `education-${index}`}
                   ref={index === educations.length - 1 ? newItemRef : null}
                   className="p-4 border border-gray-200 rounded-md relative"
                 >
@@ -281,7 +341,7 @@ export default function Education() {
                       <input
                         type="date"
                         id={`start-date-${education.id}`}
-                        value={education.start_date}
+                        value={formatDate(education.start_date)}
                         min={getDateLimit()}
                         max={getCurrentDate()}
                         onChange={(e) => handleEducationChange(index, "start_date", e.target.value)}
@@ -304,7 +364,7 @@ export default function Education() {
                       <input
                         type="date"
                         id={`end-date-${education.id}`}
-                        value={education.end_date}
+                        value={formatDate(education.end_date)}
                         min={education.start_date}
                         max={getCurrentDate()}
                         onChange={(e) => handleEducationChange(index, "end_date", e.target.value)}
@@ -439,7 +499,7 @@ export default function Education() {
                       <input
                         type="date"
                         id={`completion-date-${course.id}`}
-                        value={course.completion_date}
+                        value={formatDate(course.completion_date)}
                         min={getDateLimit()}
                         max={getCurrentDate()}
                         onChange={(e) => handleCourseChange(index, "completion_date", e.target.value)}
@@ -483,6 +543,14 @@ export default function Education() {
             </div>
           )}
         </div>
+        <div className="mt-6 text-left">
+        <button
+          className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-full transition duration-300 shadow-md"
+          onClick={handleSave}
+        >
+          Save
+        </button>
+      </div>
       </motion.div>
     </div>
   );

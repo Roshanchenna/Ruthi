@@ -39,7 +39,15 @@ const userSchema = new mongoose.Schema({
     trim: true,
   },
   interviews: [{ type: Schema.Types.ObjectId, ref: "Interview" }],
+  UserProfile: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'UserProfile'
+  },
   created_at: { type: Date, default: Date.now },
+  userProfile: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'UserProfile'
+  },
 });
 
 userSchema
